@@ -80,17 +80,10 @@
 			},
 			width:900,
 			height:900,
-			paper_bgcolor: 'rgba(0,0,0,0)',
-			xaxis: { title: { text: 'Red', font } },
-			yaxis: { title: { text: 'Blue', font } },
-			zaxis: { title: { text: 'Green', font } },
-			title:{
-				text:'subset',
-				font
-		     }
+			paper_bgcolor: 'rgba(0,0,0,0)'
 		};
 
-		const plot = subset => Plotly.newPlot('myDiv', [getTrace(data[subset])], {...layout});
+		const plot = subset => Plotly.newPlot('myDiv', [getTrace(data[subset])], {...layout,title:{text:subset,font}});
 		plot('2024')
 
 		const changeBg = value => {
