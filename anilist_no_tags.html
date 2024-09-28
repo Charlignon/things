@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Find untagged medias - Anilist mod tool</title>
+    <link rel="icon" href="https://anilist.co/img/icons/icon.svg">
+    <script src="https://unpkg.com/infinite-scroll@4/dist/infinite-scroll.pkgd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/localstorage-slim"></script>
+    <script type="text/javascript">
+        class EnumValue {
+            constructor(value, text) {
+                this.value = value;
+                this.text = text;
+            }
+        }
+
+        const debounce = (func, delay) => {
+            let debounceTimer
+            return function () {
+                const context = this
+                const args = arguments
+                clearTimeout(debounceTimer)
+                debounceTimer
+                    = setTimeout(() => func.apply(context, args), delay)
+            }
+        }
+
+        const AL_URL = "https://graphql.anilist.co";
+        const getGqlPost = (query, variables) => ({
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    query,
+                    variables,
+                }),
+            }
+        )
+        const ENUMS = {
+            MEDIA_TYPES: {
+                MANGA: new EnumValue('MANGA', 'Manga'),
+                ANIME: new EnumValue('ANIME', 'Anime')
+            },
+            SORT: {
+                MOST_RECENT: new EnumValue('START_DATE_DESC', 'Newest (by release date)'),
+                MOST_ANCIENT: new EnumValue('START_DATE', 'Oldest (by release date)'),
+                NONE: new EnumValue(null, "Default sort")
+            }
+        }
+
+        Math.clamp = (x, a, b) => Math.max(a, Math.min(x, b));
+
+        const getTags = async () => {
+            let tags = window.ls.get("tags");
+            if (!tags) {
+                console.debug("No tag data in cache, fetching...")
+                await fetch(AL_URL, getGqlPost('{ MediaTagCollection { name } }'))
+                    .then(res => res.json())
+                    .then(res => res.data["MediaTagCollection"].map(t => `${t.name}`))
+                    .then(tags => window.ls.set("tags", tags, {ttl: 60 * 60 * 24 * 7 /* 7 days */}))
+                return window.ls.get("tags");
+            }
+            console.debug("Found tag data in cache")
+            return tags
+        }
+
+        const getPage = (variables) => fetch(AL_URL, getGqlPost(
+            `query ($page: Int, $perPage: Int, $type: MediaType, $sort: [MediaSort], $tagNotIn: [String]) {
+                Page(page: $page, perPage: $perPage) {
+                    pageInfo { total currentPage lastPage hasNextPage perPage }
+                    media(type: $type, sort: $sort, tag_not_in: $tagNotIn) { id title { english romaji } siteUrl startDate { year month day } modNotes coverImage { large } }
+                }
+            }`,
+            variables))
+            .then((res) => res.json())
+
+        document.addEventListener("DOMContentLoaded", async () => {
+            console.debug("Ohayo World! UwU");
+
+            const defaultPaginationValues = {
+                page: 1,
+                perPage: 15,
+            };
+            const defaultSearchValues = {
+                type: ENUMS.MEDIA_TYPES.MANGA.value,
+                sort: ENUMS.SORT.MOST_RECENT.value,
+                tagNotIn: await getTags(),
+            };
+
+            const _cardTemplate = document.getElementById('cardTemplate');
+
+            const _loader = document.getElementById("loader");
+            const _end = document.getElementById("end");
+            const _more = document.getElementById("more");
+
+            const _resultCount = document.getElementById('resultCount');
+            const _currentPage = document.getElementById('currentPage');
+            const _hasNextPage = document.getElementById('hasNextPage');
+
+            const _filterType = document.getElementById("filter-type");
+            const _filterSort = document.getElementById("filter-sort");
+
+            const drawNewPage = async (page = defaultPaginationValues.page) => {
+                let main = document.querySelector('#results');
+                if (page == 1) main.innerHTML = "";
+
+                let variables = {
+                    ...defaultPaginationValues,
+                    ...defaultSearchValues
+                }
+                if (page) variables.page = page;
+                if ((type = _filterType.value) && type !== "null") variables.type = type;
+                if ((sort = _filterSort.value)) variables.sort = sort === "null" ? null : sort;
+
+                _more.classList.add("hidden");
+                _loader.classList.remove("hidden")
+                const {
+                    pageInfo: {currentPage, total, hasNextPage, perPage},
+                    media
+                } = (await getPage(variables)).data.Page;
+                _loader.classList.add("hidden");
+
+                _resultCount.innerHTML = `Displaying<br/>${currentPage * perPage}/${total} result${total == 1 ? '' : 's'}`;
+                _currentPage.value = currentPage;
+                _hasNextPage.value = hasNextPage;
+                if (hasNextPage) {
+                    _more.classList.remove("hidden");
+                    _end.classList.add("hidden");
+                } else {
+                    _end.classList.remove("hidden");
+                    _more.classList.add("hidden");
+                }
+
+                media.forEach(entry => {
+                    const clone = _cardTemplate.content.cloneNode(true);
+                    clone.querySelector('a').href = entry.siteUrl;
+                    clone.querySelector(".card").style.backgroundImage = `url(${entry.coverImage.large})`;
+                    clone.querySelector('b').textContent = entry.title.english || entry.title.romaji;
+                    clone.querySelector('p').textContent = entry.startDate.year;
+                    const tooltip = clone.querySelector('.tooltip');
+                    if (!entry.modNotes) {
+                        tooltip.innerHTML = entry.modNotes ? `<b>Mod notes:</b> ${entry.modNotes}` : "No mod notes";
+                        tooltip.classList.add("grayed");
+                    }
+                    main.appendChild(clone);
+                })
+            }
+
+            window.onmousemove = e => {
+                const style = document.styleSheets[0].cssRules[0].style;
+                style.setProperty('top', `${e.clientY}px`);
+                style.setProperty('left', `${e.clientX + 20}px`);
+            }
+
+            // _currentPage.onwheel = ({deltaY}) => _currentPage.value = Math.clamp(Number(_currentPage.value) - Math.sign(deltaY) * _currentPage.step, _currentPage.min, _currentPage.max);
+
+            drawNewPage();
+
+            let loading = false;
+            const handleInfiniteScroll = () => {
+                const endOfPage = window.innerHeight + window.scrollY >= document.body.offsetHeight - 1;
+                if (endOfPage && _hasNextPage.value && !loading) {
+                    console.log(window.innerHeight + window.scrollY - document.body.offsetHeight)
+                    loading = true
+                    console.debug("Motto !! Motto !!!!")
+                    drawNewPage(Number(_currentPage.value) + 1).then(() => loading = false);
+                }
+            };
+            window.addEventListener("scroll", handleInfiniteScroll);
+
+            const redraw = debounce(() => drawNewPage(1), 1200);
+
+            _filterType.addEventListener("change", redraw);
+            _filterSort.addEventListener("change", redraw);
+        });
+    </script>
+    <style>
+        .tooltip {
+            position: fixed;
+            z-index: 10;
+            top: 0;
+            left: 0;
+
+            visibility: hidden;
+            min-width: 120px;
+            max-width: 300px;
+            background-color: black;
+            color: #fff !important;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px;
+            word-wrap: anywhere;
+        }
+
+        .card:hover + .tooltip {
+            visibility: visible;
+        }
+
+        .card {
+            box-shadow: 4px 4px 8px 0 black, 0 0 2px 0 black;
+            border-radius: 8px;
+            width: 250px;
+            position: relative;
+            overflow: hidden;
+            aspect-ratio: 2/3;
+            background-size: cover;
+            background-position: center;
+            color: #7cc6f5;
+        }
+
+        .card:hover {
+            transform: scale(1.05);
+        }
+
+        .card:hover * {
+            color: #36a2dd !important;
+        }
+
+        .footer {
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            padding: 30px 15px 10px 15px;
+            background-color: rgb(21, 31, 46, 0.7);
+            box-shadow: 0 -20px 20px 10px black;
+            backdrop-filter: blur(16px);
+            mask: linear-gradient(transparent, black 20px);
+            display: flex;
+            flex-direction: column-reverse;
+            width: -moz-available;
+            width: -webkit-fill-available;
+        }
+
+        .footer * {
+            margin: 0;
+            margin-bottom: 5px;
+        }
+
+        .grayed {
+            color: darkgray !important;
+            font-style: italic;
+        }
+
+        #results {
+            display: flex;
+            justify-content: center;
+            align-items: stretch;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+
+        header {
+            background-color: #111b28;
+            padding: 20px;
+            padding: 0;
+        }
+
+        input[type=number] {
+            -moz-appearance: textfield;
+            appearance: textfield;
+            font-size: 16px;
+            font-weight: bold;
+            text-align: right;
+        }
+
+        input {
+            background-color: #111925;
+            border-radius: 5px;
+            color: #bcb6b0;
+            border: none;
+        }
+
+        *:visited, a {
+            text-decoration: none;
+        }
+
+        a:visited * {
+            color: #9e9e99 !important;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            background-color: #09121b;
+            color: #abc1d4;
+            width: 100%;
+            font-size: 1.1rem;
+            font-family: Roboto, -apple-system, BlinkMacSystemFont, Segoe UI, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+            line-height: 1.4;
+            align-items: center;
+        }
+
+        .big-wrapper {
+            max-width: 1650px;
+            padding: 20px 50px;
+            margin: 0 auto;
+        }
+
+        .big-wrapper > * {
+            width: 100%;
+        }
+
+        .wrapper {
+            max-width: 80%;
+            padding: 20px;
+            margin: 0 auto;
+        }
+
+        header > .wrapper {
+            display: flex;
+            flex-direction: row;
+            gap: 25px;
+            align-items: center;
+        }
+
+        main.big-wrapper {
+            padding-bottom: 120px;
+        }
+
+        #logo {
+            border-radius: 5px;
+            height: 100px;
+            width: 100px;
+            object-fit: cover;
+        }
+
+        #pagination {
+            position: fixed;
+            right: 0;
+            bottom: 0;
+            margin: 20px 40px;
+            text-align: right;
+            z-index: 101;
+            background-color: hsla(216, 37%, 12%, 0.5);
+            padding: 10px 12px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+
+        #loader, #end, #more {
+            margin-top: 120px;
+        }
+
+        #loader img {
+            height: 70px;
+            image-rendering: crisp-edges;
+        }
+
+        #more {
+            margin-bottom: 250px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .invisible {
+            visibility: hidden !important;
+        }
+
+        #about {
+            flex-grow: 10;
+            text-align: right;
+            display: flex;
+            justify-content: right;
+        }
+
+        #about a {
+            color: #7cc6f5;
+        }
+
+        #about > span {
+            height: 40px;
+            width: 40px;
+            border-radius: 50px;
+            background-color: #9e9e99;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5em;
+            font-weight: bolder;
+            margin-top: auto;
+            margin-bottom: auto;
+        }
+
+        #about .tooltip {
+            padding: 10px;
+            position: relative;
+            z-index: 10;
+            top: 0;
+            left: -20px;
+            visibility: visible;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <div class="wrapper">
+        <img src="https://anilist.co/img/icons/icon.svg" id="logo"/>
+        <span>
+            <h2 style="display: inline;margin: 0">Find medias with no tags</h2>
+            <br/>
+            <sub>An unofficial mod tool</sub>
+        </span>
+        <span id="about" onclick="document.querySelector('#about>div').classList.toggle('invisible')">
+            <div class="tooltip invisible">Brought to you by <a href="https://anilist.co/user/Charlignon/"
+                                                                target="_blank">Charlignon</a> uwu<br/>Request new features <a
+                    href="https://github.com/Charlignon/things" target="_blank">here</a></div>
+            <span>?</span>
+        </span>
+    </div>
+</header>
+<div class="wrapper">
+    <div id="filters">
+        <div class="custom-select">
+            <div class="name">Media type</div>
+            <select id="filter-type"></select>
+        </div>
+        <div class="custom-select">
+            <div class="name">Sort order</div>
+            <select id="filter-sort"></select>
+        </div>
+    </div>
+</div>
+<div id="pagination">
+    <span id="resultCount">No results</span>
+    <input id="currentPage" class="hidden" value="1"/>
+    <input id="hasNextPage" class="hidden" value="false"/>
+</div>
+
+<main class="big-wrapper">
+    <div id="results"></div>
+    <div id="loader" class="hidden" style="text-align: center;">
+        <img src="https://www.pokepedia.fr/images/9/93/Sprite_0285_PinRS.gif"/>
+    </div>
+    <div id="more" class="hidden" style="text-align: center;">
+        <h2>Load more...</h2>
+    </div>
+    <div id="end" class="hidden" style="text-align: center;">
+        <h2>End of results.</h2>
+    </div>
+</main>
+
+<template id="cardTemplate">
+    <a href="" target="_blank">
+        <div class="card">
+            <div class="footer">
+                <h4><b></b></h4>
+                <p></p>
+            </div>
+        </div>
+        <div class="tooltip"></div>
+    </a>
+</template>
+<!-- filters code -->
+<style>
+    #filters {
+        font-family: Overpass, -apple-system, BlinkMacSystemFont, Segoe UI, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+        margin: 40px 0;
+        margin-bottom: 25px;
+        display: grid;
+        grid-gap: 35px;
+        grid-template-columns: repeat(5, 270px);
+        /*grid-template-columns: auto 42px;*/
+        align-items: center;
+    }
+
+    .name {
+        font-size: 1rem;
+        font-weight: 600;
+        padding: 10px 0;
+        text-transform: capitalize;
+        color: #9cb5c9;
+    }
+
+    /*the container must be positioned relative:*/
+    #filters > div {
+        position: relative;
+        text-transform: capitalize;
+        cursor: pointer;
+        font-size: 0.8rem;
+        font-weight: 600;
+        white-space: normal;
+        letter-spacing: .03rem;
+        color: rgb(156, 151, 140);
+        transition: all .15s cubic-bezier(.07, .95, 0, 1);
+    }
+
+    .custom-select select {
+        display: none; /*hide original SELECT element:*/
+    }
+
+    .select-selected {
+        background-color: hsl(216, 37%, 12%);
+        border-radius: 6px;
+    }
+
+    .select-selected:after {
+        position: absolute;
+        content: "";
+        top: 63px;
+        right: 15px;
+        width: 0;
+        height: 0;
+        border: 6px solid transparent;
+        border-color: rgb(156, 151, 140) transparent transparent transparent;
+    }
+
+    .select-selected.select-arrow-active:after {
+        border-color: transparent transparent rgb(156, 151, 140) transparent;
+        top: 55px;
+    }
+
+    /*style the items (options), including the selected item:*/
+    .select-items div, .select-selected {
+        padding: 10px 12px;
+        cursor: pointer;
+        user-select: none;
+    }
+
+    /*style items (options):*/
+    .select-items {
+        position: absolute;
+        background-color: #111925;
+        top: 100%;
+        left: 0;
+        right: 0;
+        z-index: 99;
+        padding: 10px 12px;
+        cursor: pointer;
+        font-weight: 600;
+        white-space: normal;
+        letter-spacing: .03rem;
+        margin-top: 15px;
+        transition: background .2s ease-in-out, color .2s ease-in-out;
+    }
+
+    /*hide the items when the select box is closed:*/
+    .select-hide {
+        display: none;
+    }
+
+    .select-items div:hover, .same-as-selected {
+        background-color: rgba(9, 18, 27, .6);
+        color: rgb(67, 182, 242);
+    }
+</style>
+<script>
+    const fireEvent = (el, ev) => {
+        if (el.fireEvent) {
+            el.fireEvent(ev);
+        } else if (el.dispatchEvent) {
+            var event = new Event('change');
+            el.dispatchEvent(event);
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", async () => {
+        const f1 = document.getElementById("filter-type");
+        for (const sort in ENUMS.MEDIA_TYPES) {
+            const opt = document.createElement("option");
+            opt.value = ENUMS.MEDIA_TYPES[sort].value;
+            opt.text = ENUMS.MEDIA_TYPES[sort].text;
+            f1.appendChild(opt);
+        }
+        f1.value = ENUMS.MEDIA_TYPES.MANGA.value;
+
+        const f2 = document.getElementById("filter-sort");
+        for (const sort in ENUMS.SORT) {
+            const opt = document.createElement("option");
+            opt.value = ENUMS.SORT[sort].value;
+            opt.text = ENUMS.SORT[sort].text;
+            f2.appendChild(opt);
+        }
+        f2.value = ENUMS.SORT.MOST_ANCIENT.value;
+
+        var x, i, j, l, ll, selElmnt, a, b, c;
+        /* Look for any elements with the class "custom-select": */
+        x = document.getElementsByClassName("custom-select");
+        l = x.length;
+        for (i = 0; i < l; i++) {
+            selElmnt = x[i].getElementsByTagName("select")[0];
+            ll = selElmnt.length;
+            /* For each element, create a new DIV that will act as the selected item: */
+            a = document.createElement("DIV");
+            a.setAttribute("class", "select-selected");
+            a.innerHTML = selElmnt.options[selElmnt.selectedIndex].innerHTML;
+            x[i].appendChild(a);
+            /* For each element, create a new DIV that will contain the option list: */
+            b = document.createElement("DIV");
+            b.setAttribute("class", "select-items select-hide");
+            for (j = 0; j < ll; j++) {
+                /* For each option in the original select element,
+                create a new DIV that will act as an option item: */
+                c = document.createElement("DIV");
+                c.innerHTML = selElmnt.options[j].innerHTML;
+                c.addEventListener("click", function (e) {
+                    /* When an item is clicked, update the original select box,
+                    and the selected item: */
+                    var y, i, k, s, h, sl, yl;
+                    s = this.parentNode.parentNode.getElementsByTagName("select")[0];
+                    sl = s.length;
+                    h = this.parentNode.previousSibling;
+                    for (i = 0; i < sl; i++) {
+                        if (s.options[i].innerHTML == this.innerHTML) {
+                            s.selectedIndex = i;
+                            h.innerHTML = this.innerHTML;
+                            y = this.parentNode.getElementsByClassName("same-as-selected");
+                            yl = y.length;
+                            for (k = 0; k < yl; k++) {
+                                y[k].removeAttribute("class");
+                            }
+                            this.setAttribute("class", "same-as-selected");
+                            break;
+                        }
+                    }
+                    h.click();
+                    fireEvent(s, "change");
+                });
+                b.appendChild(c);
+            }
+            x[i].appendChild(b);
+            a.addEventListener("click", function (e) {
+                /* When the select box is clicked, close any other select boxes,
+                and open/close the current select box: */
+                e.stopPropagation();
+                closeAllSelect(this);
+                this.nextSibling.classList.toggle("select-hide");
+                this.classList.toggle("select-arrow-active");
+            });
+        }
+
+        function closeAllSelect(elmnt) {
+            /* A function that will close all select boxes in the document,
+            except the current select box: */
+            var x, y, i, xl, yl, arrNo = [];
+            x = document.getElementsByClassName("select-items");
+            y = document.getElementsByClassName("select-selected");
+            xl = x.length;
+            yl = y.length;
+            for (i = 0; i < yl; i++) {
+                if (elmnt == y[i]) {
+                    arrNo.push(i)
+                } else {
+                    y[i].classList.remove("select-arrow-active");
+                }
+            }
+            for (i = 0; i < xl; i++) {
+                if (arrNo.indexOf(i)) {
+                    x[i].classList.add("select-hide");
+                }
+            }
+        }
+
+        /* If the user clicks anywhere outside the select box,
+        then close all select boxes: */
+        document.addEventListener("click", closeAllSelect);
+    });
+</script>
+</body>
+</html>
