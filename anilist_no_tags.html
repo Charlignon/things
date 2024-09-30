@@ -44,6 +44,8 @@
             SORT: {
                 MOST_RECENT: new EnumValue('START_DATE_DESC', 'Newest (by release date)'),
                 MOST_ANCIENT: new EnumValue('START_DATE', 'Oldest (by release date)'),
+                LAST_UPDATED: new EnumValue('UPDATED_AT_DESC', 'Last Updated'),
+                POPULAR: new EnumValue('POPULARITY_DESC', 'Most popular'),
                 NONE: new EnumValue(null, "Default sort")
             }
         }
@@ -65,10 +67,10 @@
         }
 
         const getPage = (variables) => fetch(AL_URL, getGqlPost(
-            `query ($page: Int, $perPage: Int, $type: MediaType, $sort: [MediaSort], $tagNotIn: [String]) {
+            `query ($page: Int, $perPage: Int, $type: MediaType, $sort: [MediaSort], $tagNotIn: [String], $withAdult: Boolean) {
                 Page(page: $page, perPage: $perPage) {
                     pageInfo { total currentPage lastPage hasNextPage perPage }
-                    media(type: $type, sort: $sort, tag_not_in: $tagNotIn) { id title { english romaji } siteUrl startDate { year month day } modNotes coverImage { large } }
+                    media(type: $type, sort: $sort${variables.withAdult ? '' : ', isAdult: $withAdult'}, tag_not_in: $tagNotIn) { id title { english romaji } isAdult siteUrl startDate { year month day } modNotes coverImage { medium large color } }
                 }
             }`,
             variables))
@@ -85,6 +87,7 @@
                 type: ENUMS.MEDIA_TYPES.MANGA.value,
                 sort: ENUMS.SORT.MOST_RECENT.value,
                 tagNotIn: await getTags(),
+                withAdult: false,
             };
 
             const _cardTemplate = document.getElementById('cardTemplate');
@@ -99,6 +102,7 @@
 
             const _filterType = document.getElementById("filter-type");
             const _filterSort = document.getElementById("filter-sort");
+            const _filterAdult = document.getElementById("filter-adult");
 
             const drawNewPage = async (page = defaultPaginationValues.page) => {
                 let main = document.querySelector('#results');
@@ -111,6 +115,7 @@
                 if (page) variables.page = page;
                 if ((type = _filterType.value) && type !== "null") variables.type = type;
                 if ((sort = _filterSort.value)) variables.sort = sort === "null" ? null : sort;
+                variables.withAdult = _filterAdult.checked && undefined;
 
                 _more.classList.add("hidden");
                 _loader.classList.remove("hidden")
@@ -132,16 +137,18 @@
                 }
 
                 media.forEach(entry => {
+                    const isDefaultCover = entry.coverImage.large.endsWith('default.jpg');
                     const clone = _cardTemplate.content.cloneNode(true);
                     clone.querySelector('a').href = entry.siteUrl;
-                    clone.querySelector(".card").style.backgroundImage = `url(${entry.coverImage.large})`;
+                    const card = clone.querySelector(".card");
+                    if (entry.isAdult) card.classList.add("adult");
+                    if (isDefaultCover) card.classList.add("default-cover");
+                    card.style.setProperty("--media-color", entry.coverImage.color);
+                    card.style.backgroundImage = `url(${entry.coverImage.large}),url(${entry.coverImage.medium})`;
                     clone.querySelector('b').textContent = entry.title.english || entry.title.romaji;
                     clone.querySelector('p').textContent = entry.startDate.year;
                     const tooltip = clone.querySelector('.tooltip');
-                    if (!entry.modNotes) {
-                        tooltip.innerHTML = entry.modNotes ? `<b>Mod notes:</b> ${entry.modNotes}` : "No mod notes";
-                        tooltip.classList.add("grayed");
-                    }
+                    if (!entry.modNotes) tooltip.classList.add("hidden");
                     main.appendChild(clone);
                 })
             }
@@ -157,21 +164,26 @@
             drawNewPage();
 
             let loading = false;
-            const handleInfiniteScroll = () => {
-                const endOfPage = window.innerHeight + window.scrollY >= document.body.offsetHeight - 1;
-                if (endOfPage && _hasNextPage.value && !loading) {
-                    console.log(window.innerHeight + window.scrollY - document.body.offsetHeight)
+            const next = () => {
+                if (_hasNextPage.value && !loading) {
                     loading = true
                     console.debug("Motto !! Motto !!!!")
                     drawNewPage(Number(_currentPage.value) + 1).then(() => loading = false);
+                }
+            };
+
+            const handleInfiniteScroll = () => {
+                const endOfPage = window.innerHeight + window.scrollY >= document.body.offsetHeight - 1;
+                if (endOfPage) {
+                    next();
                 }
             };
             window.addEventListener("scroll", handleInfiniteScroll);
 
             const redraw = debounce(() => drawNewPage(1), 1200);
 
-            _filterType.addEventListener("change", redraw);
-            _filterSort.addEventListener("change", redraw);
+            document.querySelectorAll("#filters :is(input, select)").forEach(el => el.addEventListener("change", redraw));
+            document.getElementById("more").addEventListener("click", next);
         });
     </script>
     <style>
@@ -205,15 +217,49 @@
             aspect-ratio: 2/3;
             background-size: cover;
             background-position: center;
-            color: #7cc6f5;
+            color: #c3dcff;
         }
 
         .card:hover {
             transform: scale(1.05);
         }
 
-        .card:hover * {
-            color: #36a2dd !important;
+        .card:hover > .footer * {
+            color: var(--media-color, #36a2dd) !important;
+        }
+
+        .cardbody {
+            height: 100%;
+            width: 100%;
+        }
+        .adult-tag {
+            background-color: #ab0f2a;
+            border-radius: 5px;
+            font-size: 0.6em;
+            position: absolute;
+            top: 0;
+            right: 0;
+            margin: 5px;
+            display: none;
+            padding: 5px;
+            color: #fff !important;
+            font-weight: bold;
+            font-family: monospace;
+            letter-spacing: -0.3px;
+            transform: scaleY(90%);
+        }
+
+        .card.adult .adult-tag { display: block }
+        .card.adult:not(.default-cover) .cardbody {
+            backdrop-filter: blur(10px);
+            transition: all .03s;
+        }
+        .card.adult:hover .cardbody {
+            backdrop-filter: none;
+        }
+
+        .card:hover .footer {
+            backdrop-filter: blur(3px);
         }
 
         .footer {
@@ -346,7 +392,7 @@
             image-rendering: crisp-edges;
         }
 
-        #more {
+        #more, #loader {
             margin-bottom: 250px;
         }
 
@@ -373,7 +419,7 @@
             height: 40px;
             width: 40px;
             border-radius: 50px;
-            background-color: #9e9e99;
+            background-color: #9cb5c9;
             color: white;
             display: flex;
             justify-content: center;
@@ -421,6 +467,14 @@
             <div class="name">Sort order</div>
             <select id="filter-sort"></select>
         </div>
+        <div class="custom-checkmark">
+            <div class="name">Include adult content</div>
+                <label>
+                    <input type="checkbox" id="filter-adult"/>
+                    <span class="checkmark"></span>
+                    <p></p>
+                </label>
+        </div>
     </div>
 </div>
 <div id="pagination">
@@ -445,6 +499,8 @@
 <template id="cardTemplate">
     <a href="" target="_blank">
         <div class="card">
+            <div class="cardbody"></div>
+            <div class="adult-tag">ADULT</div>
             <div class="footer">
                 <h4><b></b></h4>
                 <p></p>
@@ -464,6 +520,79 @@
         grid-template-columns: repeat(5, 270px);
         /*grid-template-columns: auto 42px;*/
         align-items: center;
+    }
+
+    .custom-checkmark {
+        display: block;
+        position: relative;
+        cursor: pointer;
+    }
+    .custom-checkmark > label {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 10px;
+
+        & p {
+            margin: 0;
+        }
+    }
+
+    /* Hide the browser's default checkbox */
+    .custom-checkmark input {
+        display: none;
+    }
+    .custom-checkmark p:after {
+        content: "Adult content is hidden"
+    }
+
+    /* Create a custom checkbox */
+    .checkmark {
+        display: block;
+        height: 30px;
+        width: 30px;
+        margin: 5px 0;
+        border-radius: 6px;
+        background-color: #111b28;
+    }
+
+    /* On mouse-over, add a grey background color */
+    .custom-checkmark:hover input ~ .checkmark {
+        background-color: rgb(156, 151, 140);
+    }
+
+    /* When the checkbox is checked, add a blue background */
+    .custom-checkmark input:checked ~ .checkmark {
+        background-color: #9cb5c9;
+    }
+
+    /* Create the checkmark/indicator (hidden when not checked) */
+    .checkmark:after {
+        content: "";
+        position: absolute;
+        display: none;
+    }
+
+    /* Show the checkmark when checked */
+    .custom-checkmark input:checked ~ .checkmark:after {
+        display: block;
+    }
+    .custom-checkmark input:checked ~ p:after {
+        content: "Adult content is displayed";
+    }
+
+    /* Style the checkmark/indicator */
+    .custom-checkmark .checkmark:after {
+        position: relative;
+        left: 9px;
+        top: 3px;
+        width: 8px;
+        height: 15px;
+        border: solid white;
+        border-width: 0 4px 4px 0;
+        -webkit-transform: rotate(45deg);
+        -ms-transform: rotate(45deg);
+        transform: rotate(45deg);
     }
 
     .name {
