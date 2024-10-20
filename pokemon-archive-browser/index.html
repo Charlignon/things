@@ -1218,10 +1218,10 @@
                 <input type="text" placeholder="Search..." title="Type in a name">
                 <ul></ul>
             </div>
-            <div class="custom-checkmark">
+            <div class="custom-checkmark" id="filter-dex">
                 <div class="name">Search with dex number</div>
                 <label>
-                    <input type="checkbox" id="filter-dex" checked/>
+                    <input type="checkbox" checked/>
                     <span class="checkmark"></span>
                     <p></p>
                 </label>
@@ -1258,6 +1258,7 @@
     _search._input = _search.querySelector('input');
     const _main = document.querySelector('main');
     const _dexIdFilter = document.getElementById("filter-dex");
+    _dexIdFilter._input = _dexIdFilter.querySelector("input");
     const _iframeFilter = document.getElementById("filter-iframe");
 
 
@@ -1299,8 +1300,10 @@
             if (!e.currentTarget.checked) {
                 _freeSearch.classList.add('hidden');
                 _search.classList.remove('hidden');
+                _dexIdFilter.classList.remove('hidden');
             } else {
                 _search.classList.add('hidden');
+                _dexIdFilter.classList.add('hidden');
                 _freeSearch.classList.remove('hidden');
             }
         })
@@ -1329,8 +1332,8 @@
             refreshDd();
         });
         _iframeFilter.addEventListener("change", () => refreshCards());
-        _dexIdFilter.addEventListener("change", () => {
-            idSearchEnabled = _dexIdFilter.checked;
+        _dexIdFilter._input.addEventListener("change", () => {
+            idSearchEnabled = _dexIdFilter._input.checked;
             doSearch()
         });
 
