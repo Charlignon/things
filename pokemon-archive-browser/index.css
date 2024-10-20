@@ -276,7 +276,7 @@ input:checked + .slider:before {
     }
 }
 
-#filter-dex {
+#filter-dex input {
     & ~ p:after {
         content: "Searching with name only"
     }
