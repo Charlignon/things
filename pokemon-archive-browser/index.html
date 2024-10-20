@@ -1166,6 +1166,12 @@
             return window.data.f.values().filter(f => f.lcstr.includes(searchStr) || idS(f.lcstr)).toArray();
         }
 
+        const searchAny = s => {
+            s = s.toLowerCase()
+            console.log(s);
+            return window.data.f.values().filter(f => f.lcstr.includes(s)).toArray();
+        }
+
         const P = new class {
             data = [];
             cursor = 0;
@@ -1186,15 +1192,28 @@
 <div id="banner">
     <h1>Pokemon Assets Archive browser</h1>
     <h2>A tool by <a href="https://github.com/Charlignon/">@Charlignon</a></h2>
+    <h3>Last data update: Oct 11, 2024</h3>
     <br>
     <h4>Warning: this tool use a lot of processing and memory resources, and may slow down your browser.</h4>
     <button id="load-data">Proceed</button>
 </div>
 <header>
-    <button onclick="fetchData()">Fetch</button>
+    <button onclick="fetchData()" class="hidden">Fetch</button>
     <div class="wrapper">
-        <div id="filters">
-            <div id="search">
+        <div id="search-toggle">
+            Pokemon search
+            <label class="switch">
+                <input type="checkbox">
+                <span class="slider"></span>
+            </label>
+            Free search
+        </div>
+        <div class="filters">
+            <div id="free-search" class="search hidden">
+                <div class="name">Search any text</div>
+                <input type="text" placeholder="Type and press enter..." title="Type at least 2 characters">
+            </div>
+            <div id="search" class="search">
                 <div class="name">Select a Pokemon</div>
                 <input type="text" placeholder="Search..." title="Type in a name">
                 <ul></ul>
@@ -1232,6 +1251,8 @@
             <div class="tooltip"></div>
         </a>`;
 
+    const _freeSearch = document.getElementById('free-search');
+    _freeSearch._input = _freeSearch.querySelector('input');
     const _search = document.getElementById('search');
     _search._ul = _search.querySelector('ul');
     _search._input = _search.querySelector('input');
@@ -1253,8 +1274,8 @@
     _search.querySelector('input').addEventListener('keyup', e => refreshDd(e.target.value.toLowerCase()));
 
     const refreshCards = () =>
-        _main.innerHTML = `
-            <div id="buttons" ${P.count() === 0 && "class='hidden'"}>
+        _main.innerHTML = P.count() === 0 ? `<div id="no-data">No results.</div>` : `
+            <div id="buttons">
                 <button id="prev" onclick="P.prev();refreshCards();" ${P.hasPrev() ? '' : 'disabled'}><</button>
                 Page ${P.pageN()}/${P.count()} (${P.data.length} results)
                 <button id="next" onclick="P.next();refreshCards()" ${P.hasNext() ? '' : 'disabled'}>></button>
@@ -1274,12 +1295,30 @@
             document.getElementById('banner').classList.add('hidden');
         })
 
+        document.querySelector('#search-toggle input').addEventListener('change', e => {
+            if (!e.currentTarget.checked) {
+                _freeSearch.classList.add('hidden');
+                _search.classList.remove('hidden');
+            } else {
+                _search.classList.add('hidden');
+                _freeSearch.classList.remove('hidden');
+            }
+        })
+
+        const doFreeSearch = () => {
+            const s = _freeSearch._input.value;
+            if (!s || s.length < 2) return;
+            P.reset();
+            P.data = searchAny(s);
+            refreshCards();
+        }
         const doSearch = () => {
             P.reset();
             P.data = searchMon(parseInt(_search._input.value))
             refreshCards();
         };
 
+        _freeSearch._input.addEventListener("change", () => doFreeSearch())
         _search._ul.addEventListener("mouseup", e => {
             _search._input.value = e.target.textContent;
             document.activeElement.blur();
