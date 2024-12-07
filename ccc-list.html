@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>La liste de Charles</title>
+      <link rel="icon" href="https://em-content.zobj.net/source/twitter/408/santa-claus_1f385.png">
+
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.jsdelivr.net/gh/mcstudios/glightbox/dist/js/glightbox.min.js"></script>
+
+    <style>
+        @import url("https://fonts.googleapis.com/css2?family=Baloo+2&display=swap");
+
+        body {
+            font-family: "Baloo 2", cursive;
+            font-size: 16px;
+            color: #fff;
+            text-rendering: optimizeLegibility;
+            font-weight: initial;
+            background: #110f16;
+        }
+
+        a, a:hover {
+            text-decoration: none;
+            transition: color 0.3s ease-in-out;
+        }
+
+        i {
+            font-style: unset;
+        }
+
+        #pageHeaderTitle {
+            margin: 2rem 0;
+            text-transform: uppercase;
+            text-align: center;
+            font-size: 2.5rem;
+             & ~ h4 {
+                 margin-top: -40px;
+             }
+        }
+
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            flex-direction: row;
+            gap: 20px;
+            width: 80%;
+            max-width: 1000px;
+            margin-left: auto;
+            margin-right: auto;
+            margin-top: 50px;
+
+            & > * {
+                flex-wrap: unset;
+            }
+        }
+
+        i {
+            font-family: "FontAwesome";
+            margin-right: 10px;
+        }
+
+        /* Cards */
+        .postcard {
+            display: flex;
+            box-shadow: 0 4px 21px -12px rgba(0, 0, 0, 0.66);
+            border-radius: 10px;
+            margin: 0 0 2rem 0;
+            overflow: hidden;
+            position: relative;
+            color: #fff;
+            width: 100%;
+        }
+
+        .postcard.dark {
+            background-color: #18151f;
+        }
+
+        .postcard .t-dark {
+            color: #18151f;
+        }
+
+        .postcard a {
+            color: inherit;
+        }
+
+        .postcard h1, .postcard .h1 {
+            margin-bottom: 0.5rem;
+            line-height: 1.2;
+        }
+
+        .postcard .small {
+            font-size: 80%;
+        }
+
+        .postcard .postcard__title {
+            font-size: 1.75rem;
+            & i {
+                font-size: 1.2rem;
+                margin-left: 5px;
+            }
+        }
+
+        .postcard .postcard__img {
+            max-height: 180px;
+            width: 100%;
+            object-fit: cover;
+            position: relative;
+        }
+
+        .postcard .postcard__img_link {
+            display: contents;
+        }
+
+        .postcard .postcard__bar {
+            width: 50px;
+            min-height: 5px;
+            margin: 10px 0;
+            border-radius: 5px;
+            background-color: #424242;
+            transition: width 0.2s ease;
+        }
+
+        .postcard .postcard__text {
+            padding: 1.5rem;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .postcard .postcard__preview-txt {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            text-align: justify;
+            height: 100%;
+        }
+
+        .postcard .postcard__tagbox {
+            display: flex;
+            flex-flow: row wrap;
+            font-size: 14px;
+            margin: 20px 0 0 0;
+            padding: 0;
+            justify-content: center;
+        }
+
+        .postcard .postcard__tagbox .tag__item {
+            display: inline-block;
+            background: rgba(83, 83, 83, 0.4);
+            border-radius: 3px;
+            padding: 2.5px 10px;
+            margin: 0 5px 5px 0;
+            cursor: default;
+            user-select: none;
+            transition: background-color 0.3s;
+        }
+
+        .postcard .postcard__tagbox .tag__item:hover {
+            background: rgba(83, 83, 83, 0.8);
+        }
+
+        .postcard:before {
+            content: "";
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            background-image: linear-gradient(-70deg, #424242, transparent 50%);
+            opacity: 1;
+            border-radius: 10px;
+        }
+
+        .postcard:hover .postcard__bar {
+            width: 150px;
+        }
+
+        @media screen and (min-width: 769px) {
+            .postcard .postcard__title {
+                font-size: 2rem;
+            }
+
+            .postcard .postcard__tagbox {
+                justify-content: start;
+            }
+
+            .postcard .postcard__img {
+                max-width: 400px;
+                max-height: 100%;
+                transition: transform 0.3s ease;
+            }
+
+            .postcard .postcard__text {
+                padding: 3rem;
+                width: 100%;
+            }
+
+            .postcard .media.postcard__text:before {
+                content: "";
+                position: absolute;
+                display: block;
+                background: #18151f;
+                top: -20%;
+                height: 130%;
+                width: 55px;
+            }
+
+            .postcard:hover .postcard__img {
+                transform: scale(1.1);
+            }
+
+            .postcard:nth-child(2n+1) {
+                flex-direction: row;
+            }
+
+            .postcard:nth-child(2n+0) {
+                flex-direction: row-reverse;
+            }
+
+            .postcard:nth-child(2n+1) .postcard__text::before {
+                left: -12px !important;
+                transform: rotate(4deg);
+                box-shadow: -10px 0px 5px #18151f;
+            }
+
+            .postcard:nth-child(2n+0) .postcard__text::before {
+                right: -12px !important;
+                transform: rotate(-4deg);
+                box-shadow: 10px 0px 5px #18151f;
+            }
+        }
+
+        @media screen and (min-width: 1024px) {
+            .postcard__text {
+                padding: 2rem 3.5rem;
+            }
+
+            .postcard__text:before {
+                content: "";
+                position: absolute;
+                display: block;
+                top: -20%;
+                height: 130%;
+                width: 55px;
+            }
+
+            .postcard.dark .postcard__text:before {
+                background: #18151f;
+            }
+
+
+        }
+
+        /* COLORS */
+        .postcard .postcard__tagbox .green.play:hover {
+            background: #79dd09;
+            color: black;
+        }
+
+        .green .postcard__title:hover {
+            color: #79dd09;
+        }
+
+        .green .postcard__bar {
+            background-color: #79dd09;
+        }
+
+        .green::before {
+            background-image: linear-gradient(-30deg, rgba(121, 221, 9, 0.1), transparent 50%);
+        }
+
+        .green:nth-child(2n)::before {
+            background-image: linear-gradient(30deg, rgba(121, 221, 9, 0.1), transparent 50%);
+        }
+
+        .postcard .postcard__tagbox .blue.play:hover {
+            background: #0076bd;
+        }
+
+        .blue .postcard__title:hover {
+            color: #0076bd;
+        }
+
+        .blue .postcard__bar {
+            background-color: #0076bd;
+        }
+
+        .blue::before {
+            background-image: linear-gradient(-30deg, rgba(0, 118, 189, 0.1), transparent 50%);
+        }
+
+        .blue:nth-child(2n)::before {
+            background-image: linear-gradient(30deg, rgba(0, 118, 189, 0.1), transparent 50%);
+        }
+
+        .postcard .postcard__tagbox .red.play:hover {
+            background: #bd150b;
+        }
+
+        .red .postcard__title:hover {
+            color: #bd150b;
+        }
+
+        .red .postcard__bar {
+            background-color: #bd150b;
+        }
+
+        .red::before {
+            background-image: linear-gradient(-30deg, rgba(189, 21, 11, 0.1), transparent 50%);
+        }
+
+        .red:nth-child(2n)::before {
+            background-image: linear-gradient(30deg, rgba(189, 21, 11, 0.1), transparent 50%);
+        }
+
+        .postcard .postcard__tagbox .yellow.play:hover {
+            background: #bdbb49;
+            color: black;
+        }
+
+        .yellow .postcard__title:hover {
+            color: #bdbb49;
+        }
+
+        .yellow .postcard__bar {
+            background-color: #bdbb49;
+        }
+
+        .yellow::before {
+            background-image: linear-gradient(-30deg, rgba(189, 187, 73, 0.1), transparent 50%);
+        }
+
+        .yellow:nth-child(2n)::before {
+            background-image: linear-gradient(30deg, rgba(189, 187, 73, 0.1), transparent 50%);
+        }
+
+        @media screen and (min-width: 769px) {
+            .green::before {
+                background-image: linear-gradient(-80deg, rgba(121, 221, 9, 0.1), transparent 50%);
+            }
+
+            .green:nth-child(2n)::before {
+                background-image: linear-gradient(80deg, rgba(121, 221, 9, 0.1), transparent 50%);
+            }
+
+            .blue::before {
+                background-image: linear-gradient(-80deg, rgba(0, 118, 189, 0.1), transparent 50%);
+            }
+
+            .blue:nth-child(2n)::before {
+                background-image: linear-gradient(80deg, rgba(0, 118, 189, 0.1), transparent 50%);
+            }
+
+            .red::before {
+                background-image: linear-gradient(-80deg, rgba(189, 21, 11, 0.1), transparent 50%);
+            }
+
+            .red:nth-child(2n)::before {
+                background-image: linear-gradient(80deg, rgba(189, 21, 11, 0.1), transparent 50%);
+            }
+
+            .yellow::before {
+                background-image: linear-gradient(-80deg, rgba(189, 187, 73, 0.1), transparent 50%);
+            }
+
+            .yellow:nth-child(2n)::before {
+                background-image: linear-gradient(80deg, rgba(189, 187, 73, 0.1), transparent 50%);
+            }
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: black;
+            align-content: center;
+
+            & img {
+                display: block;
+                margin: auto;
+                padding: 0;
+                max-width: 1200px;
+                height: 95%;
+                width: auto;
+            }
+        }
+
+
+    </style>
+
+    <script>
+        // Open the Modal
+        function openModal(img) {
+            document.getElementById("modalImg").setAttribute("src", img);
+            document.getElementById("myModal").style.display = "block";
+        }
+
+        // Close the Modal
+        function closeModal() {
+            document.getElementById("myModal").style.display = "none";
+        }
+    </script>
+</head>
+<body>
+
+<div class="container py-4">
+    <div>
+        <h1 class="h1 text-center" id="pageHeaderTitle">🎄🎁 La liste de Charles :)</h1>
+        <h4>Pas particulièrement en ordre de préférence</h4>
+    </div>
+
+    <article class="postcard dark yellow">
+        <a class="postcard__img_link">
+            <img class="postcard__img" src="https://eu.nps-solovair.com/cdn/shop/products/390-013Tan4EyeSuedeGibsonShoe_2_1080x.jpg?v=1654676242" alt="Image Title"/>
+        </a>
+        <div class="postcard__text">
+            <h1 class="postcard__title yellow"><a href="https://eu.nps-solovair.com/products/390-013" target="_blank">Une paire de Solovair (type gibson) en cuir suède  <i class="fa-solid fa-external-link"></i></a></h1>
+            <div class="postcard__bar"></div>
+            <div class="postcard__preview-txt">
+                Solovair c'est l'entreprise qui était derrière la confection des Doc Martens. Quand on les a virés pour
+                diminuer les coûts, iels ont créé leur propre marque. Des chaussures faites main d'excellente qualité donc.
+            </div>
+            <ul class="postcard__tagbox">
+                <li class="tag__item"><i class="fa-solid fa-tag"></i>159€</li>
+                <li class="tag__item"><i class="fa-solid fa-clock-o"></i>Si ça arrive après Noël c'est pas grave</li>
+                <li class="tag__item"><i class="fa-solid fa-paint-brush"></i>Spécifiquement celles couleur sable</li>
+                <li class="tag__item"><a><i class="fa-solid fa-percent"></i>Pointure : 40-41</a></li>
+            </ul>
+        </div>
+    </article>
+
+    <article class="postcard dark green">
+        <a class="postcard__img_link">
+            <img class="postcard__img" src="https://www.cdiscount.com/pdt2/9/2/2/1/700x700/OCCT71I82CD2922.jpg" alt="Image Title"/>
+        </a>
+        <div class="postcard__text">
+            <h1 class="postcard__title green"><a>Un mixeur plongeant qui fait aussi batteur</a></h1>
+            <div class="postcard__bar"></div>
+            <div class="postcard__preview-txt">
+                N'importe quel modèle fait l'affaire, tant qu'il fait les deux !
+                <br/>Image non contractuelle les autres options m'intéressent peu
+            </div>
+            <ul class="postcard__tagbox">
+                <li class="tag__item"><i class="fa-solid fa-tag"></i>Prix libre</li>
+            </ul>
+        </div>
+    </article>
+
+    <article class="postcard dark red">
+        <a class="postcard__img_link">
+            <img class="postcard__img" src="https://as2.ftcdn.net/v2/jpg/01/46/72/35/1000_F_146723571_zB8yGSQye44pWBiUWZBdWIMxSdSm8Vuy.jpg" alt="Image Title"/>
+        </a>
+        <div class="postcard__text">
+            <h1 class="postcard__title red"><a>La fin du néolibéralisme</a></h1>
+            <div class="postcard__bar"></div>
+            <div class="postcard__preview-txt">
+                Point bonus si mise en place du revenu universel
+            </div>
+            <ul class="postcard__tagbox">
+                <li class="tag__item"><i class="fa-solid fa-tag"></i>0€ c'est les riches qui payent</li>
+            </ul>
+        </div>
+    </article>
+
+    <article class="postcard dark yellow">
+        <a class="postcard__img_link">
+            <img class="postcard__img" src="https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/b4b60b5d-f4f7-47f3-971b-fae28a8ca285/dipdb59-9b5f836e-4bc6-4256-884f-9c950eaf1e99.png/v1/fill/w_894,h_894,q_70,strp/mitaines_by_balignonemperor_dipdb59-pre.jpg?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7ImhlaWdodCI6Ijw9MTAwMCIsInBhdGgiOiJcL2ZcL2I0YjYwYjVkLWY0ZjctNDdmMy05NzFiLWZhZTI4YThjYTI4NVwvZGlwZGI1OS05YjVmODM2ZS00YmM2LTQyNTYtODg0Zi05Yzk1MGVhZjFlOTkucG5nIiwid2lkdGgiOiI8PTEwMDAifV1dLCJhdWQiOlsidXJuOnNlcnZpY2U6aW1hZ2Uub3BlcmF0aW9ucyJdfQ.n9AK5Sdhy7XrBiszYwh1EMewnGqB_uShzk8DJOldPfI" alt="Image Title"/>
+        </a>
+        <div class="postcard__text">
+            <h1 class="postcard__title yellow"><a>Des mitaines de qualité</a></h1>
+            <div class="postcard__bar"></div>
+            <div class="postcard__preview-txt">
+                Qui ressemblent vaguement à ça, tant qu'il n'y a pas de trous/qu'elles couvrent le poignet
+                (pas comme les gants de moto par ex.).
+                Le matériau importe peu, mais j'aimerais pas trop épais.
+                <br/>A toutes fins utiles, mon poignet fait 7cm de large et ma paume 9.5cm de haut
+            </div>
+            <ul class="postcard__tagbox">
+                <li class="tag__item"><i class="fa-solid fa-tag"></i>Pas plus de 50-60€</li>
+                <li class="tag__item"><i class="fa-solid fa-paint-brush"></i>Indifférent, noir c'est bien</li>
+            </ul>
+        </div>
+    </article>
+
+    <article class="postcard dark yellow">
+        <a class="postcard__img_link">
+            <img class="postcard__img" src="https://img.amiami.com/images/product/main/244/FIGURE-176944.jpg" alt="Image Title"/>
+        </a>
+        <div class="postcard__text">
+            <h1 class="postcard__title yellow"><a href="https://www.amiami.com/eng/detail/?gcode=FIGURE-176944" target="_blank">Des sous pour une figurine   <i class="fa-solid fa-external-link"></i></a></h1>
+            <div class="postcard__bar"></div>
+            <div class="postcard__preview-txt">
+                Très probablement celle-ci, tiré du manga L'Atelier des Sorciers 👉
+                <br/> J'hésite encore à l'acheter mais si c'est un cadeau ça change tout :D
+            </div>
+            <ul class="postcard__tagbox">
+                <li class="tag__item"><i class="fa-solid fa-tag"></i>Prix de base: ~115€</li>
+                <li class="tag__item"><i class="fa-solid fa-tag"></i>Estimation des frais de port/douane: ~70€</li>
+                <li class="tag__item"><a><i class="fa-solid fa-percent"></i>22cm de haut</a></li>
+            </ul>
+        </div>
+    </article>
+
+    <article class="postcard dark red">
+        <a class="postcard__img_link">
+            <img class="postcard__img" src="https://images.centprod.com/3025594738709/niOCTJwMKu5g-taT3HD6s1rSmSWs9dLU1-L2JWkZgxF0rByKl13LsA-cover-large.jpg" alt="Image Title"/>
+        </a>
+        <div class="postcard__text">
+            <h1 class="postcard__title red"><a href="https://www.librairiesindependantes.com/product/9791032309803/">Les recettes d'une japonaise "spécial pâtisserie"   <i class="fa-solid fa-external-link"></i></a></h1>
+            <div class="postcard__bar"></div>
+            <div class="postcard__preview-txt">
+                De Saori Laurent aux éditions Marie Claire
+            </div>
+            <ul class="postcard__tagbox">
+                <li class="tag__item"><i class="fa-solid fa-tag"></i>15.90€</li>
+            </ul>
+        </div>
+    </article>
+
+    <article class="postcard dark blue">
+        <a class="postcard__img_link">
+            <img class="postcard__img" src="https://laboutiquedelaceinture.fr/cdn/shop/products/laniere-de-ceinture-34-cm-en-cuir-pour-boucles-ardillons-aspect-vieillit-modele-maloney-417628.jpg?v=1707600667" alt="Image Title"/>
+        </a>
+        <div class="postcard__text">
+            <h1 class="postcard__title blue"><a>Une ceinture en cuir ou en tissu solide</a></h1>
+            <div class="postcard__bar"></div>
+            <div class="postcard__preview-txt">
+                Juste la lanière suffit, j'ai déjà une boucle qui me plaît. Le cuir c'est plus facile à retailler, et c'est
+                plutôt durable (et j'aimerais bien quelque chose qui dure).
+            </div>
+            <ul class="postcard__tagbox">
+                <li class="tag__item"><i class="fa-solid fa-paint-brush"></i>Noir de préférence, assez foncé en tout cas</li>
+                <li class="tag__item"><a><i class="fa-solid fa-percent"></i>~3cm de large</a></li>
+            </ul>
+        </div>
+    </article>
+</div>
+
+<!-- The Modal/Lightbox -->
+<div id="myModal" class="modal" onclick="closeModal()">
+    <img id="modalImg" src="">
+</div>
+
+</body>
+<script>
+    document.addEventListener("DOMContentLoaded", function (event) {
+        const click = e => {
+            const img = e.target.getAttribute("src");
+            openModal(img);
+        }
+        for (let e of document.getElementsByTagName("img")) {
+            e.addEventListener("click", click)
+        }
+    });
+
+</script>
+
+</html>
