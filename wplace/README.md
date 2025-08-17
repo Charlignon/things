@@ -1,4 +1,4 @@
-**EN** | **FR**
+**EN** | **[FR](https://github.com/Charlignon/things/blob/main/wplace/LISEZ-MOI.md)**
 
 ## Welcome !
 
