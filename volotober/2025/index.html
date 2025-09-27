@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Volotober 2025 prompt list</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bungee&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+
+            font-family: "Bungee", sans-serif;
+            font-size: 1.5rem;
+        }
+
+        header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            height: 30vh;
+            max-height: 30vw;
+            background-color: goldenrod;
+            color: black;
+
+            overflow: hidden;
+
+            & > div {
+                align-content: center;
+            }
+
+            & #logo {
+                position: absolute;
+                z-index: 1;
+                opacity: 25%;
+                height: 120%;
+                left: -9vw;
+                top: -1vh;
+            }
+
+            & #mainEntry {
+                margin: 30px 30px 0;
+                position: absolute;
+                z-index: 4;
+                font-size: 6rem;
+                width: fit-content;
+                bottom: 0;
+            }
+
+            & #more {
+                position: absolute;
+                margin: 0;
+                z-index: 0;
+                top: 0;
+                right: 0;
+                background-size: cover;
+                height: 100%;
+                aspect-ratio: 1;
+                text-align: right;
+                align-content: end;
+                background-blend-mode: multiply;
+                background-color: #0007;
+                font-size: large;
+                font-style: italic;
+                color: white;
+                overflow: hidden;
+
+                & #separator {
+                    position: relative;
+                    left: 10px;
+                    bottom: -10px;
+                    z-index: 2;
+                    background-color: goldenrod;
+                    transform: rotate(-75deg);
+                    transform-origin: bottom left;
+                    height: 100%;
+                    width: 1000px;
+                    border-bottom: 10px solid darkgoldenrod;
+
+                }
+
+                & > div {
+                    position: relative;
+                    bottom: 60px;
+                    right: 10px;
+                }
+            }
+        }
+
+        main {
+            margin-top: 30vh;
+            padding: 50px;
+
+            & #entryList {
+                display: flex;
+                justify-content: space-evenly;
+                flex-wrap: wrap;
+                gap: 25px;
+
+                & .entry {
+                    padding: 20px;
+                    background-color: #7ca4d0;
+                    width: 28%;
+
+                    &:hover {
+                        background-color: #c9d7e8;
+                    }
+
+                }
+            }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        #modal {
+            position: fixed;
+            height: 100%;
+            width: 100%;
+            z-index: 10;
+            backdrop-filter: blur(3px) brightness(60%);
+            top: 0;
+            overflow: scroll;
+            padding-bottom: 50px;
+
+            & #modalContent {
+                width: 80%;
+                background-color: darkgoldenrod;
+                min-height: 80%;
+                margin: 50px auto auto;
+                border-radius: 25px;
+                padding: 30px;
+                box-sizing: border-box;
+
+                & #modalTitle {
+                    font-size: xxx-large;
+                }
+
+                & #divider {
+                    width: 100%;
+                    height: 0;
+                    border: 3px solid black;
+                }
+                & #modalSubtitle {
+                    margin-top: 20px;
+                    font-size: large;
+                }
+
+                & #modalDescription {
+                    font-size: xx-large;
+                }
+
+                & #modalGallery {
+                    & img {
+                        max-width: 100%;
+                        min-width: 50%;
+                    }
+                }
+            }
+        }
+
+    </style>
+
+
+    <script type="text/javascript">
+        class Entry {
+            /**
+             * @param day int [1;31]
+             * @param keyword_en string
+             * @param keyword_jp string
+             * @param details string but long
+             * @param images string[], should be urls
+             */
+            constructor(day, keyword_en, keyword_jp, details, images) {
+                this.day = day;
+                this.keyword_en = keyword_en;
+                this.keyword_jp = keyword_jp;
+                this.details = details;
+                this.images = images;
+            }
+
+        }
+
+        const data = new Map([
+              new Entry(1, "Clown", "道化師", "U.N. Owen was her, a video of Ronald McDonald dancing on a music from Touhou", ["https://i.ytimg.com/vi/AARyGaYvVI8/hqdefault.jpg"]),
+              new Entry(2, "Boomer", "おじさん構文", "Boomer writing, characterised by the overuse of emojis and particular sentences", ["https://www.ohk.co.jp/cgi-image/10804/10804_XQVtGIXsYfccefKgzDwMQHudmctAPEiWsoUQWbwyKjLknLTpsd.jpg"]),
+              new Entry(3, "Heave ho!", "エッホエッホ", "eh-oh-eh-oh, a Japanese video trend", ["https://plugins-media.makeupar.com/smb/blog/post/2025-03-03/webp_2d9e1db5-8391-40e3-8261-8ad69200056c.jpg"]),
+              new Entry(4, "Migraine", "偏頭痛", "Let's take ibuprofen together ! And other variants", ["https://i.pinimg.com/736x/8b/e1/d5/8be1d5c21c5b55c237b7ba8b9625fa6e.jpg"]),
+              new Entry(5, "Laser", "レーザー", "The laser seagull", ["https://www.meme-arsenal.com/memes/982b6b9f543b0a1d42229a82d1bdf0fa.jpg"]),
+              new Entry(6, "Crumbs", "断片", "Miette ! You kick Miette like the football ?!!!!", ["https://img.ifunny.co/images/d40cbe1ea577d7286a1811db0307e0cbb6ec916afd8aa22043f881e927edb641_1.jpg"]),
+              new Entry(7, "Boat", "船", "Nice Boat!, a meme that emerged when an anime episode was replaced by stock footage after a tragic incident, and Evergreen, the infamous boat that got stuck in the Suez canal", ["http://3.bp.blogspot.com/-fhm6IHvLwl8/UT4PAM2u5aI/AAAAAAAAAKY/BlIgzJSXz1k/s640/nice-boat_jpg_650x10000_q85.jpg", "https://image.cnbcfm.com/api/v1/image/106860121-1616772119794-02_close_up_view_of_ever_given_ship_suez_canal_26march2021_wv2.jpg?v=1616772491"]),
+              new Entry(8, "Rhythm", "リズム", "Bongo cat", ["https://c.tenor.com/N-s9PJ2HbvgAAAAC/bongo-cat-volo-pokemon.gif"]),
+              new Entry(9, "Computer", "コンピュータ", "All the computer memes in the world. There is too much. You get this one", ["https://www.meme-arsenal.com/memes/0192b7c867537492db738c6e812a649f.jpg"]),
+              new Entry(10, "Give up", "諦める", "Guess who just got rick rolled :) Also the motivational Japanese fisherman video", ["https://i.ytimg.com/vi/tYzMYcUty6s/mqdefault.jpg", "https://i1.sndcdn.com/artworks-x8zI2HVC2pnkK7F5-4xKLyA-t500x500.jpg"]),
+              new Entry(11, "Reaction", "反応", "Live slug reaction", ["https://img1.picmix.com/output/stamp/normal/4/0/5/2/2312504_7c1e7.png"]),
+              new Entry(12, "Bucket", "バケツ", "Ice bucket challenge", ["https://media.globalcitizen.org/thumbnails/a6/cd/a6cdea05-0a16-425b-b345-375a6a340240/ice_bucket_challenge.jpg__1600x900_q85_crop_subsampling-2.jpg"]),
+              new Entry(13, "Leek", "葱", "Loituma, a character from the anime Bleach spinning her leek to the rhythm of Llevan polka", ["https://www.orrorea33giri.com/wp-content/uploads/2016/12/Loituma-Ievan-Polkka-bleacg-cropped-300x157.jpg"]),
+              new Entry(14, "Cherry", "桜ん坊", "Rerorerorerorerorerorerorerorero, a scene from Jojo's Bizarre Adventures", ["https://i.ytimg.com/vi/HojJV3CxqXg/maxresdefault.jpg"]),
+              new Entry(15, "Wine", "ワイン", "A three panel meme, also from Jojo's Bizarre Adventures", ["https://i.ytimg.com/vi/rOy5lMGTjdg/maxresdefault.jpg"]),
+              new Entry(16, "Golden", "黄金", "Golden Winds, one of the main theme from, you guessed it, Jojo's Bizarre Adventures; Golden Winds. Also a music in recent popular movie KPOP Demon Hunters", ["https://vignette.wikia.nocookie.net/jjba/images/5/55/GoldenWind-Promo.png/revision/latest?cb=20180930190706", "https://images.genius.com/b5c11506d341f028f3665d09b2d41250.1000x1000x1.png"]),
+              new Entry(17, "Liar", "嘘つき", "The cake is a lie, a reference to the game Portal", ["http://www.quickmeme.com/img/17/17e0b05b12ad147de895ec77099cee3bc629854c202d6e470e59748112fd6cbe.jpg"]),
+              new Entry(18, "Fish", "魚", "Le Poisson Steve, a french meme: No context given :) It's just a fish", ["https://static01.nyt.com/images/2025/04/14/multimedia/14ST-LE-POISSON-STEVE-jwbg/14ST-LE-POISSON-STEVE-jwbg-superJumbo.jpg?quality=75&auto=webp"]),
+              new Entry(19, "Psychic", "エスパー", "My two/three/etc braincells coming together, a meme to signify your idea wasn't brillant. This one is a bit of a stretch I admit", ["https://media.tenor.com/-bjwg9Eix-IAAAAM/hatsune-miku-triple-baka.gif"]),
+              new Entry(20, "City", "市", "This futuristic city, vision of what could be if not for some stupid thing", ["http://www.shutupandtakemymoney.com/wp-content/uploads/2020/04/society-if-florida-didnt-exist-meme.jpg"]),
+              new Entry(21, "Nocturnal", "夜型", "The owl drawing tutorial. Just follow the steps ! It's easy", ["https://i.pinimg.com/originals/1a/45/a6/1a45a6202cc426da22254a157b35859f.jpg"]),
+              new Entry(22, "Different", "別", "I'm Not Like The Other Girls, a meme mocked for its simplistic vision of others", ["https://i.pinimg.com/originals/3f/03/a5/3f03a5cafe5b0102b0839a1ec7c529da.jpg"]),
+              new Entry(23, "Choice", "選択", "Distracted boyfriend, a man making the wrong choices", ["https://imgk.timesnownews.com/story/distracted_boyfriend_2.jpg"]),
+              new Entry(24, "Five", "五", "E rush, a music that uuuuh. It's something. Anyway, E is the 5th letter of the alphabet", ["https://i.ytimg.com/vi/bBXzvd6hvyY/maxresdefault.jpg"]),
+              new Entry(25, "Poison", "どく", "A llama ?! He's supposed to be dead !, a scene from Emperor Kuzco", ["https://i.redd.it/j0n0muvsu0b71.jpg"]),
+              new Entry(26, "Doom", "凶運", "I love you/You are going to superhell, a scene from Supernatural where fan favourite ship Dean Winchester x Castiel was finally canonised, just for one character to be immediately sent to superhell", ["https://uploads.dailydot.com/2024/11/destiel-confession-15.jpg?auto=compress&fm=pjpg"]),
+              new Entry(27, "Instrument", "楽器/道具", "Keyboard cat ! Who doesn't like cats", ["https://upload.wikimedia.org/wikipedia/en/8/87/Keyboard_cat.jpg"]),
+              new Entry(28, "Surprise", "驚き", "Surprised Pikachu, probably one of the most mainstream Pokemon meme", ["https://i.imgflip.com/2n0nbi.jpg"]),
+              new Entry(29, "Bush", "灌木", "Homer Simpson disappearing in a bush", ["https://i.pinimg.com/originals/da/a8/d1/daa8d11b559821171fa792b6c51218a9.jpg"]),
+              new Entry(30, "Fire", "ほのお", "Little girl watching a house burn", ["https://www.meme-arsenal.com/memes/9708772e90d9a866c8f2fee7abf3db18.jpg"]),
+              new Entry(31, "Cafe", "カフェ", "This is fine, a character calmly drinking a coffee, blind to what's happening to them", ["https://wallpaperaccess.com/full/2616915.jpg"])
+          ].map(e => [e.day, e])
+        );
+
+        const setMainEntry = id => {
+            console.log("click", id)
+            document.getElementById("date").textContent = `${id}/10/2025`
+            let entry = data.get(id);
+            document.getElementById("mainEntry").innerHTML = (entry && (entry.keyword_jp + "<br>" + entry.keyword_en)) || "No entry today";
+            document.getElementById("more").style.setProperty("background-image", `url("${entry.images[0]}")`)
+
+            const modal = document.getElementById("modal");
+            modal.querySelector("#modalTitle").textContent = `${entry.keyword_en} / ${entry.keyword_jp}`
+            modal.querySelector("#modalDescription").textContent = entry.details
+            const gallery = modal.querySelector("#modalGallery")
+            gallery.innerHTML = ""
+            entry.images.forEach(im => {
+                const image = document.createElement('img')
+                image.src = im
+                console.log(image)
+                gallery.appendChild(image)
+            });
+        }
+
+        const toggleModal = () => document.getElementById("modal").classList.toggle("hidden");
+
+    </script>
+</head>
+<body>
+<div id="modal" class="hidden" onclick="toggleModal()">
+    <div id="modalContent">
+        <div id="modalTitle"></div>
+        <div id="divider"></div>
+        <div id="modalSubtitle">This entry was inspired by:</div>
+        <div id="modalDescription"></div>
+
+        <div id="modalGallery"></div>
+    </div>
+</div>
+
+<header>
+
+    <img id="logo" src="./volotober%202025.png">
+
+    <div id="mainEntry">
+    </div>
+
+    <div id="more" onclick="toggleModal()">
+        <div id="separator"></div>
+        <div>
+            <span id="date"></span>
+            <br>
+            Learn more...
+        </div>
+    </div>
+
+</header>
+<main>
+    <div id="entryList"></div>
+
+</main>
+</body>
+
+<script type="text/javascript">
+    document.addEventListener("DOMContentLoaded", async () => {
+        const entryList = document.getElementById("entryList");
+        for (let [_, e] of data) {
+            const clone = document.createElement("div");
+            clone.classList.add("entry");
+            clone.onclick = () => setMainEntry(e.day);
+            clone.textContent = `${e.day}. ${e.keyword_en} / ${e.keyword_jp}`;
+            entryList.appendChild(clone)
+        }
+
+        const today = new Date().getDate();
+        setMainEntry(today);
+        entryList.childNodes[today - 1]?.style?.setProperty("border", "4px solid black")
+    });
+</script>
+</html>
